@@ -386,6 +386,21 @@ WHERE Ratings IS NOT NULL AND c.category = 'Restaurants' AND
 +---------+-------------+----------------------------------------+-------------+
 
 
+--3RD table:
+SELECT b.name AS 'Restaurants in Las Vegas', h.hours,
+    -- Categorizing based on specified stars
+    CASE
+        WHEN b.stars BETWEEN 2 AND 3 THEN 'Low Rating'
+        WHEN b.stars BETWEEN 4 AND 5 THEN 'High Rating'
+    END AS Ratings
+
+-- Joining the business and category tables
+FROM (business b INNER JOIN category c) INNER JOIN hours h
+ON b.id = c.business_id AND b.id = h.business_id
+
+-- Conditions for filtering and sorting
+WHERE Ratings IS NOT NULL AND c.category = 'Restaurants' AND 
+    b.city = 'Las Vegas' AND Ratings = 'Low Rating';
 
 +--------------------------+----------------------+------------+
 | Restaurants in Las Vegas | hours                | Ratings    |
@@ -399,39 +414,200 @@ WHERE Ratings IS NOT NULL AND c.category = 'Restaurants' AND
 | Wingstop                 | Saturday|11:00-0:00  | Low Rating |
 +--------------------------+----------------------+------------+
 
+
+ANSWER: The two groups analyzed (low-rated and high-rated businesses) do not show a different distribution of hours based on the provided data. In this specific case, the hours for Wingstop in Las Vegas remain consistent despite having a low rating.
+
+
+-Las Vegas has three Restaurants with high ratings (Big Wong Restaurant, Jacques Cafe, and Hibachi-San) and one with a low rating (Wingstop).
+-Phoenix has three Restaurants with high ratings and two with low ratings.
+-Wingstop in Las Vegas operates from 11:00 AM to 12:00 AM every day of the week.
+-This consistent operating schedule does not seem to vary based on the low rating.
+-Additional factors such as customer reviews, service quality, or specific feedback may provide more insights into the reasons behind the ratings.
+-It's also essential to consider more businesses and their hours for a comprehensive analysis.
+
+
+
 ii. Do the two groups you chose to analyze have a different number of reviews?
-         
-         
+
+	ANSWER:  Yes, there are different number of reviews.
++--------------------------+--------------+-------------+
+| Restaurants in Las Vegas | review_count | Ratings     |
++--------------------------+--------------+-------------+
+| Big Wong Restaurant      |          768 | High Rating |
+| Jacques Cafe             |          168 | High Rating |
+| Hibachi-San              |            3 | High Rating |
+| Wingstop                 |          123 | Low Rating  |
++--------------------------+--------------+-------------+
+
+
+SELECT b.name AS 'Restaurants in Las Vegas', review_count,
+    -- Categorizing based on specified stars
+    CASE
+        WHEN b.stars BETWEEN 2 AND 3 THEN 'Low Rating'
+        WHEN b.stars BETWEEN 4 AND 5 THEN 'High Rating'
+    END AS Ratings
+
+-- Joining the business and category tables
+FROM business b INNER JOIN category c 
+ON b.id = c.business_id
+
+-- Conditions for filtering and sorting
+WHERE Ratings IS NOT NULL AND c.category = 'Restaurants' AND b.city = 'Las Vegas'
+ORDER BY Ratings;
+
+
+  
 iii. Are you able to infer anything from the location data provided between these two groups? Explain.
 
+
+At first glance it seems that there is no correlation between the location of the neighborhoods and the ratinds, a much more detailed geographical analysis would need to be done.
+
+
++--------------------------+--------------+-------------+
+| Restaurants in Las Vegas | neighborhood | Ratings     |
++--------------------------+--------------+-------------+
+| Big Wong Restaurant      | Chinatown    | High Rating |
+| Jacques Cafe             | Summerlin    | High Rating |
+| Hibachi-San              | Eastside     | High Rating |
+| Wingstop                 |              | Low Rating  |
++--------------------------+--------------+-------------+
+
+
 SQL code used for analysis:
 
+SELECT b.name AS 'Restaurants in Las Vegas', neighborhood,
+    -- Categorizing based on specified stars
+    CASE
+        WHEN b.stars BETWEEN 2 AND 3 THEN 'Low Rating'
+        WHEN b.stars BETWEEN 4 AND 5 THEN 'High Rating'
+    END AS Ratings
+
+-- Joining the business and category tables
+FROM business b INNER JOIN category c 
+ON b.id = c.business_id
+
+-- Conditions for filtering and sorting
+WHERE Ratings IS NOT NULL AND c.category = 'Restaurants' AND b.city = 'Las Vegas'
+ORDER BY Ratings;
+
 		
-		
+
+  
 2. Group business based on the ones that are open and the ones that are closed. What differences can you find between the ones that are still open and the ones that are closed? List at least two differences and the SQL code you used to arrive at your answer.
-		
-i. Difference 1:
-         
-         
-ii. Difference 2:
-         
-         
+
+  +---------+----------------+--------------------+
+| is_open | Num_Businesses |  AVG(review_count) |
++---------+----------------+--------------------+
+|       0 |           1520 | 23.198026315789473 |
+|       1 |           8480 | 31.757075471698112 |
++---------+----------------+--------------------+
+
+
+i. Distinction 1:
+Within the Yelp dataset, there exists a greater number of businesses that maintain their operational status as opposed to those that have ceased operations.
+
+ii. Discrepancy 2:
+As per the Yelp database, businesses that have closed garnered a higher quantity of reviews compared to those that remain open.
+
          
 SQL code used for analysis:
 
-	
+SELECT 
+  is_open, 
+  COUNT(name) AS 'Num_Businesses', 
+  AVG(review_count)
+FROM business 
+WHERE name IS NOT NULL
+GROUP BY is_open; 
+
+
 	
 3. For this last part of your analysis, you are going to choose the type of analysis you want to conduct on the Yelp dataset and are going to prepare the data for analysis.
 
 Ideas for analysis include: Parsing out keywords and business attributes for sentiment analysis, clustering businesses to find commonalities or anomalies between them, predicting the overall star rating for a business, predicting the number of fans a user will have, and so on. These are just a few examples to get you started, so feel free to be creative and come up with your own problem you want to solve. Provide answers, in-line, to all of the following:
+
 	
-i. Indicate the type of analysis you chose to do:
+i. Indicate the type of analysis you chose to do: 
+
+Explore the relationship between the average review count and the average star rating for businesses.
+
+
          
          
 ii. Write 1-2 brief paragraphs on the type of data you will need for your analysis and why you chose that data:
+* High Review Count and High Star Rating: Look for businesses with both a high average review count and a high average star rating. These businesses are likely popular and well-rated.
+
+* Low Review Count and High Star Rating: Identify businesses with a low average review count but a high average star rating. This might indicate hidden gems that are not widely reviewed but highly rated.
+
+* High Review Count and Low Star Rating: Explore businesses with a high average review count but a low average star rating. This could reveal businesses with a substantial number of reviews but lower satisfaction.
+  
+* Low Review Count and Low Star Rating: Check for businesses with both a low average review count and a low average star rating. These businesses might be relatively unknown and not well-received.
+
+*Overall Trends: Observe any overall trends or patterns in the relationship between review count and star rating. For example, does a higher review count generally correlate with a higher star rating?
+
+
                            
                   
 iii. Output of your finished dataset:
+
+	 +-----------------------------------------+------------------+---------------+-------+------------------+-----------------+
+| business_name                           | neighborhood     | city          | state | avg_review_count | avg_star_rating |
++-----------------------------------------+------------------+---------------+-------+------------------+-----------------+
+| #1 Cochran Hyundai of South Hills       | Dormont          | Pittsburgh    | PA    |             11.0 |             3.5 |
+| #1 Cochran Monroeville Collision Center |                  | Monroeville   | PA    |              6.0 |             2.5 |
+| 1 Nails &Spa Salon                      |                  | Waunakee      | WI    |              4.0 |             3.0 |
+| 1-800-GOT-JUNK? Pittsburgh City         | Lawrenceville    | Pittsburgh    | PA    |             20.0 |             4.5 |
+| 10 Factory Fitness Center               |                  | Scottsdale    | AZ    |              4.0 |             5.0 |
+| 100th Bomb Group                        | Riverside        | Cleveland     | OH    |            110.0 |             3.0 |
+| 107.9 The Alternative                   | Eastside         | Las Vegas     | NV    |              7.0 |             3.5 |
+| 12 West Brewing                         |                  | Gilbert       | AZ    |             46.0 |             4.0 |
+| 12th House Interiors                    |                  | Chagrin Falls | OH    |              4.0 |             5.0 |
+| 131 Main                                | Ballantyne       | Charlotte     | NC    |            247.0 |             4.0 |
+| 1602                                    | Brockton Village | Toronto       | ON    |             16.0 |             4.5 |
+| 16th Hole at The Phoenix Open           |                  | Scottsdale    | AZ    |             26.0 |             4.5 |
+| 18 Degrees Neighborhood Grill           |                  | Scottsdale    | AZ    |             72.0 |             3.0 |
+| 1900 Asian Cuisine                      | Chinatown        | Las Vegas     | NV    |             61.0 |             3.0 |
+| 192 Airport Rocket                      | Etobicoke        | Toronto       | ON    |             15.0 |             4.0 |
+| 1st Bank                                |                  | Scottsdale    | AZ    |              5.0 |             3.5 |
+| 2-Save Auto Glass                       |                  | Phoenix       | AZ    |              4.0 |             4.0 |
+| 20 20 Opticians                         |                  | Edinburgh     | EDH   |              3.0 |             4.0 |
+| 2001 Cleaners Inc                       | Elizabeth        | Charlotte     | NC    |              9.0 |             4.0 |
+| 201 West                                |                  | Tempe         | AZ    |              3.0 |             1.0 |
+| 2010 Fusion Restaurant                  | Chinatown        | Las Vegas     | NV    |              3.0 |             4.0 |
+| 21 Lounge & Kitchen                     | Gateway District | Cleveland     | OH    |             71.0 |             4.0 |
+| 216 Bistro                              | Brooklyn-Centre  | Cleveland     | OH    |              3.0 |             2.5 |
+| 24 Hour Cleaners                        | Westside         | Las Vegas     | NV    |              3.0 |             3.0 |
+| 24 Hour Fitness - Green Valley          |                  | Henderson     | NV    |             56.0 |             3.5 |
++-----------------------------------------+------------------+---------------+-------+------------------+-----------------+
+(Output limit exceeded, 25 of 9881 total rows shown)
          
-         
+
+Observations:
+* Highly Reviewed Businesses: Some businesses, such as "131 Main" in Charlotte, NC, have a high average review count (247.0), suggesting they are popular among users.
+Diverse Star Ratings:
+
+* The average star ratings range from 1.0 to 5.0. Businesses like "12th House Interiors" have a perfect 5.0-star rating, while others, like "201 West," have a lower rating of 1.0.
+
+* Focus on Positive Reviews: Businesses with high average review counts and positive star ratings may benefit from emphasizing positive customer experiences in marketing.
+
+* Address Low Ratings: Businesses with lower star ratings, such as "201 West," may need to address customer concerns or improve services to enhance their ratings.
+
+* Explore Local Trends: Consider exploring trends specific to each location. For example, businesses in Charlotte, NC, may have different characteristics than those in Las Vegas, NV.
+
+* Identify Niche Markets: Identify businesses with high ratings in specific niches (e.g., "12th House Interiors" with a 5.0-star rating) and explore strategies to leverage these niches.
+
+
 iv. Provide the SQL code you used to create your final dataset:
+
+-- Calculate the average review count and average star rating for each business with name and location
+SELECT
+    name AS business_name,
+    neighborhood,
+    city,
+    state,
+    AVG(review_count) AS avg_review_count,
+    AVG(stars) AS avg_star_rating
+FROM
+    business
+GROUP BY
+    name, neighborhood, city, state;
